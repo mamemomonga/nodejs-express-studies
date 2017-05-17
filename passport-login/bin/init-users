@@ -1,0 +1,50 @@
+#!/usr/bin/env node
+// vim:ft=javascript
+// ユーザデータDB 初期化ツール
+'use strict';
+
+var db=require('../db');
+var crypto = require("crypto");
+
+// ドキュメント0件の場合
+// 初期ユーザとして以下のデータを挿入する
+var init_users = [
+	{
+		username:    'admin',
+		password:    'secret1',
+		displayName: '管理者',
+		is_admin:    true,
+		email:       'admin@example.com'
+	},{
+		username:    'user',
+		password:    'secret2',
+		displayName: 'ユーザ',
+		email:       'user@example.com'
+	},
+];
+
+// パスワードをHash化 SHA256,Base64
+for(var u in init_users) {
+	var sha256=crypto.createHash('sha256');
+	sha256.update(init_users[u].password);
+	init_users[u].password=sha256.digest('base64');
+}
+
+// データが空なら初期ユーザを設定
+new Promise(function(resolve,reject) {
+	db.users.count({},function(err,count) {
+		if(err) return reject(err);
+		if(count != 0) return resolve();
+		db.users.insert(init_users,function(err,docs){
+			if(err) return reject(err);
+			console.log("初期ユーザを設定しました");
+			return resolve();
+		});
+	});
+}).then(function() { // resolve
+	db.users.find({},function(err,docs) { console.log(docs); });
+
+},function(err) { // reject
+	console.log(err);
+});
+

@@ -1,40 +1,51 @@
 // authentication.js
 'use strict';
 
-var passport     = require('passport'),
-    Strategy     = require('passport-local').Strategy,
-    ensure_login = require('connect-ensure-login'),
-    db           = require('../db');
+var passport      = require('passport'),
+    LocalStrategy = require('passport-local').Strategy,
+    ensure_login  = require('connect-ensure-login'),
+	crypto        = require("crypto"),
+    db            = require('../db');
 
 module.exports={
 
 	// passportの初期化
 	setup_passport:function(app){
-		passport.use(new Strategy(
-			function(username, password, cb) {
-				db.users.findByUsername(username, function(err, user) {
-					if (err) { return cb(err); }
-					if (!user) { return cb(null, false, { message: 'ユーザエラー' }); }
-					if (user.password != password) { return cb(null, false, { message: 'パスワードエラー' }); }
-					return cb(null, user);
+
+		// 認証処理
+		passport.use(new LocalStrategy(
+			function(username, password, done) {
+				// パスワードのHash化
+				var sha256=crypto.createHash('sha256');
+				sha256.update(password);
+				// ユーザを探す
+				db.users.findOne({
+					'username': username,
+					'password': sha256.digest('base64')
+				},function(err,docs) {
+					if(err) return done(err);
+					if(!docs) return done(null,false);
+					return done(null,docs._id);
 				});
 			}
 		));
 
-		passport.serializeUser(function(user, cb) {
-		  cb(null, user.id);
-		});
+		// シリアライザ
+		passport.serializeUser(function(userid, done) { done(null, userid) });
 
-		passport.deserializeUser(function(id, cb) {
-		  db.users.findById(id, function (err, user) {
-		    if (err) { return cb(err); }
-		    cb(null, user);
-		  });
+		// デシリアライザ
+		passport.deserializeUser(function(id, done) {
+			db.users.findOne({ '_id': id },function(err,docs) {
+				if(err) return done(err);
+				return done(null, {
+					username: docs.username,
+					is_admin: docs.is_admin ? true : false
+				});
+			});
 		});
 
 		app.use(passport.initialize());
 		app.use(passport.session());
-
 
 	},
 
@@ -51,7 +62,8 @@ module.exports={
 			passport.authenticate('local', {
 				successRedirect: '/',
 				failureRedirect: '/login',
-				failureFlash: true
+				failureFlash: true,
+				failureFlash: 'ユーザ名またはパスワードが違います'
 			})
 		);
 	
@@ -62,7 +74,7 @@ module.exports={
 
 	},
 
-	// ログイン状態のチェック
+	// middleware: ログイン状態のチェック
 	ensureLoggedIn: ensure_login.ensureLoggedIn
 
 };
