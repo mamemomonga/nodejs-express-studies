@@ -1,4 +1,4 @@
-// 認証処理
+// authentication.js
 'use strict';
 
 var passport     = require('passport'),
@@ -7,6 +7,7 @@ var passport     = require('passport'),
     db           = require('../db');
 
 module.exports={
+
 	// passportの初期化
 	setup_passport:function(app){
 		passport.use(new Strategy(
@@ -36,6 +37,7 @@ module.exports={
 
 
 	},
+
 	// passport用routesの初期化
 	setup_routes:function(app) {
 		app.get('/login', function(req, res, next) {
@@ -59,9 +61,9 @@ module.exports={
 		});
 
 	},
-	ensure_login: function() {
-		return ensure_login.ensureLoggedIn();
-	},
+
+	// ログイン状態のチェック
+	ensureLoggedIn: ensure_login.ensureLoggedIn
 
 };
 
