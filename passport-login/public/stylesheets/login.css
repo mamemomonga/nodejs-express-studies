@@ -1,0 +1,58 @@
+html, body, main {
+    height: 100%;
+	overflow:hidden;
+	font-family:Arial, sans-serif;
+}
+main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+table {
+	padding: 10px;
+	border-collapse: collapse;
+}
+
+table td {
+	padding: 10px;
+	text-align: center;
+	vertical-align: middle;
+	border: 0;
+}
+
+input[type="text"],input[type="password"] {
+	margin:  5px;
+	padding: 5px;
+	border:0;
+	font-size:24px;
+	color:#333333;
+	border:solid 1px #ccc;
+	width:300px;
+	-webkit-border-radius: 10px;
+	-moz-border-radius: 10px;
+	border-radius: 10px; 
+}
+
+input[type="submit"] {
+	border:solid 1px #ccc;
+	padding: 10px;
+	width: 90%;
+	font-size:24px;
+	text-transform:uppercase;
+	font-weight:bold;
+	color:#333;
+	cursor:pointer; 
+	-webkit-border-radius: 10px;
+	-moz-border-radius: 10px;
+	border-radius: 10px; 
+}
+
+.message {
+	font-weight:bold;
+	font-size: 24px;
+	color: #FFFFFF;
+	background-color: #FF0000;
+	height: 20px;
+}
+
